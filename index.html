@@ -9,20 +9,14 @@
 <body>
     <header>
         <h1>Echo Contact Form</h1>
-        <p>Test Website with Functional Form</p>
+        <p>Test Website with Mailgun Integration</p>
     </header>
     
     <div class="container">
         <h2>Contact Us</h2>
         <p>Please fill out this form to get in touch with our team. We'll respond to your inquiry as soon as possible.</p>
         
-        <form id="contactForm" action="https://formsubmit.co/echoaisystems@gmail.com" method="POST">
-            <!-- FormSubmit configuration -->
-            <input type="hidden" name="_subject" value="New contact form submission">
-            <input type="hidden" name="_template" value="table">
-            <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="_next" value="thank-you.html">
-            
+        <form id="contactForm">
             <div class="form-group">
                 <label for="name">Full Name:</label>
                 <input type="text" id="name" name="name" required>
@@ -57,7 +51,7 @@
         </form>
         
         <div id="successMessage" class="success-message">
-            Thank you for your message! Your email has been sent to echoaisystems@gmail.com. We will contact you soon.
+            Thank you for your message! Your email has been sent to mikecerqua@gmail.com using Mailgun. We will contact you soon.
         </div>
         
         <div id="errorMessage" class="error-message">
@@ -69,6 +63,73 @@
         <p>Created by Echo AI Systems | Contact Form Test | March 24, 2025</p>
     </footer>
 
-    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('contactForm');
+            
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                
+                // Get form values
+                const formData = {
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    subject: document.getElementById('subject').value,
+                    message: document.getElementById('message').value
+                };
+                
+                // Validate form (simple validation)
+                if (!formData.name || !formData.email || !formData.message) {
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('errorMessage').textContent = 'Please fill out all required fields.';
+                    document.getElementById('successMessage').style.display = 'none';
+                    return;
+                }
+                
+                // Show loading state
+                const submitButton = form.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.textContent;
+                submitButton.disabled = true;
+                submitButton.textContent = 'Sending...';
+                
+                try {
+                    // Submit form data to our serverless function
+                    const response = await fetch('/api/sendmail', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        // Show success message
+                        document.getElementById('successMessage').style.display = 'block';
+                        document.getElementById('errorMessage').style.display = 'none';
+                        
+                        // Reset form
+                        form.reset();
+                    } else {
+                        // Show error message
+                        document.getElementById('errorMessage').style.display = 'block';
+                        document.getElementById('errorMessage').textContent = result.message || 'Error submitting form. Please try again.';
+                        document.getElementById('successMessage').style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Error submitting form:', error);
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('errorMessage').textContent = 'Network error. Please check your connection and try again.';
+                    document.getElementById('successMessage').style.display = 'none';
+                } finally {
+                    // Restore button state
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalButtonText;
+                }
+            });
+        });
+    </script>
 </body>
 </html>
