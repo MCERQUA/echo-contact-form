@@ -28,21 +28,36 @@ exports.handler = async function(event, context) {
     };
   }
 
+  // Configure mailgun settings
+  // First check for environment variables, then fall back to hardcoded values
+  const mailgunHost = process.env.MAILGUN_SMTP_HOST || 'smtp.mailgun.org';
+  const mailgunPort = process.env.MAILGUN_SMTP_PORT || 587;
+  const mailgunUser = process.env.MAILGUN_SMTP_USER || 'postmaster@sandbox206b88d8d50946179b90938caabb2124.mailgun.org';
+  const mailgunPass = process.env.MAILGUN_SMTP_PASS || 'cae3446a94fc51f8d106d5c1da0be463-3af52e3b-37d182ef';
+  const recipientEmail = process.env.RECIPIENT_EMAIL || 'mikecerqua@gmail.com';
+
+  // Log which configuration is being used (environment or fallback)
+  console.log(`Using SMTP host: ${mailgunHost}`);
+  console.log(`Using SMTP port: ${mailgunPort}`);
+  console.log(`Using SMTP user: ${mailgunUser}`);
+  console.log(`Using recipient email: ${recipientEmail}`);
+  console.log(`Using environment variables: ${!!process.env.MAILGUN_SMTP_HOST}`);
+
   // Create Nodemailer transporter
   const transporter = nodemailer.createTransport({
-    host: 'smtp.mailgun.org',
-    port: 587,
+    host: mailgunHost,
+    port: mailgunPort,
     secure: false, // true for 465, false for other ports
     auth: {
-      user: 'postmaster@sandbox206b88d8d50946179b90938caabb2124.mailgun.org',
-      pass: 'cae3446a94fc51f8d106d5c1da0be463-3af52e3b-37d182ef'
+      user: mailgunUser,
+      pass: mailgunPass
     }
   });
 
   // Email content
   const mailOptions = {
     from: `"${data.name}" <${data.email}>`,
-    to: 'mikecerqua@gmail.com',
+    to: recipientEmail,
     subject: `Contact Form: ${data.subject || 'New Message'}`,
     text: `
       Name: ${data.name}
@@ -69,13 +84,21 @@ exports.handler = async function(event, context) {
     await transporter.sendMail(mailOptions);
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: 'Email sent successfully' })
+      body: JSON.stringify({ 
+        message: 'Email sent successfully',
+        recipient: recipientEmail,
+        using_env_vars: !!process.env.MAILGUN_SMTP_HOST
+      })
     };
   } catch (error) {
     console.error('Error sending email:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Error sending email', error: error.message })
+      body: JSON.stringify({ 
+        message: 'Error sending email', 
+        error: error.message,
+        using_env_vars: !!process.env.MAILGUN_SMTP_HOST
+      })
     };
   }
 };
