@@ -28,36 +28,35 @@ exports.handler = async function(event, context) {
     };
   }
 
-  // Configure mailgun settings
-  // First check for environment variables, then fall back to hardcoded values
-  const mailgunHost = process.env.MAILGUN_SMTP_HOST || 'smtp.mailgun.org';
-  const mailgunPort = process.env.MAILGUN_SMTP_PORT || 587;
-  const mailgunUser = process.env.MAILGUN_SMTP_USER || 'postmaster@sandbox206b88d8d50946179b90938caabb2124.mailgun.org';
-  const mailgunPass = process.env.MAILGUN_SMTP_PASS || 'cae3446a94fc51f8d106d5c1da0be463-3af52e3b-37d182ef';
-  const recipientEmail = process.env.RECIPIENT_EMAIL || 'mikecerqua@gmail.com';
-
-  // Log which configuration is being used (environment or fallback)
-  console.log(`Using SMTP host: ${mailgunHost}`);
-  console.log(`Using SMTP port: ${mailgunPort}`);
-  console.log(`Using SMTP user: ${mailgunUser}`);
-  console.log(`Using recipient email: ${recipientEmail}`);
-  console.log(`Using environment variables: ${!!process.env.MAILGUN_SMTP_HOST}`);
+  // Check for required environment variables
+  if (!process.env.MAILGUN_SMTP_HOST || 
+      !process.env.MAILGUN_SMTP_PORT || 
+      !process.env.MAILGUN_SMTP_USER || 
+      !process.env.MAILGUN_SMTP_PASS) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ 
+        message: 'Server configuration error - missing environment variables',
+        details: 'Please set up the required environment variables in Netlify'
+      })
+    };
+  }
 
   // Create Nodemailer transporter
   const transporter = nodemailer.createTransport({
-    host: mailgunHost,
-    port: mailgunPort,
-    secure: false, // true for 465, false for other ports
+    host: process.env.MAILGUN_SMTP_HOST,
+    port: process.env.MAILGUN_SMTP_PORT,
+    secure: false,
     auth: {
-      user: mailgunUser,
-      pass: mailgunPass
+      user: process.env.MAILGUN_SMTP_USER,
+      pass: process.env.MAILGUN_SMTP_PASS
     }
   });
 
   // Email content
   const mailOptions = {
     from: `"${data.name}" <${data.email}>`,
-    to: recipientEmail,
+    to: process.env.RECIPIENT_EMAIL || 'mikecerqua@gmail.com',
     subject: `Contact Form: ${data.subject || 'New Message'}`,
     text: `
       Name: ${data.name}
@@ -84,11 +83,7 @@ exports.handler = async function(event, context) {
     await transporter.sendMail(mailOptions);
     return {
       statusCode: 200,
-      body: JSON.stringify({ 
-        message: 'Email sent successfully',
-        recipient: recipientEmail,
-        using_env_vars: !!process.env.MAILGUN_SMTP_HOST
-      })
+      body: JSON.stringify({ message: 'Email sent successfully' })
     };
   } catch (error) {
     console.error('Error sending email:', error);
@@ -96,8 +91,7 @@ exports.handler = async function(event, context) {
       statusCode: 500,
       body: JSON.stringify({ 
         message: 'Error sending email', 
-        error: error.message,
-        using_env_vars: !!process.env.MAILGUN_SMTP_HOST
+        error: error.message
       })
     };
   }
