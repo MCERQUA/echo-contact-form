@@ -1,6 +1,6 @@
 # Echo Contact Form with Mailgun Integration
 
-A contact form website with Mailgun SMTP integration that can be deployed to Netlify. This form sends emails directly to mikecerqua@gmail.com through Mailgun's SMTP service.
+A contact form website with Mailgun SMTP integration that can be deployed to Netlify. Once configured, this form sends emails through Mailgun's SMTP service.
 
 ## Features
 
@@ -20,6 +20,13 @@ This contact form uses Netlify Functions (AWS Lambda) to handle form submissions
 4. The function uses Nodemailer to send the email via Mailgun SMTP
 5. A success or error message is displayed to the user
 
+## Important Security Notice
+
+⚠️ **BEFORE USING THIS REPOSITORY:**
+1. You **MUST** set up environment variables in Netlify for your Mailgun credentials
+2. The form will not function until these variables are set
+3. Never commit SMTP credentials or API keys to public repositories
+
 ## Deployment Instructions
 
 1. Log in to Netlify (https://app.netlify.com/)
@@ -27,37 +34,26 @@ This contact form uses Netlify Functions (AWS Lambda) to handle form submissions
 3. Select your GitHub account and this repository
 4. Click "Deploy site"
 
-Netlify will automatically detect the netlify.toml configuration and deploy the site with the serverless function.
+## Required Environment Variables
 
-## Environment Variables
-
-The serverless function is configured to work without any setup, but it's recommended to set up environment variables for better security. To set up environment variables in Netlify:
+You **MUST** set up these environment variables for the form to work:
 
 1. Deploy your site first
 2. Go to Site settings > Environment > Environment variables
 3. Add the following variables:
-   - `MAILGUN_SMTP_HOST`: smtp.mailgun.org
-   - `MAILGUN_SMTP_PORT`: 587
-   - `MAILGUN_SMTP_USER`: postmaster@sandbox206b88d8d50946179b90938caabb2124.mailgun.org
-   - `MAILGUN_SMTP_PASS`: cae3446a94fc51f8d106d5c1da0be463-3af52e3b-37d182ef
-   - `RECIPIENT_EMAIL`: mikecerqua@gmail.com
+   - `MAILGUN_SMTP_HOST`: Your Mailgun SMTP host
+   - `MAILGUN_SMTP_PORT`: Your Mailgun SMTP port (typically 587)
+   - `MAILGUN_SMTP_USER`: Your Mailgun SMTP username
+   - `MAILGUN_SMTP_PASS`: Your Mailgun SMTP password
+   - `RECIPIENT_EMAIL`: Email address to receive form submissions
 4. Click "Save"
 5. Redeploy your site (Go to Deploys > Trigger deploy > Deploy site)
-
-If you don't set these variables, the function will fallback to the hardcoded values.
-
-## Site ID Information
-
-- **Site name:** echo-contact-form
-- **Owner:** MikeCerqua
-- **Site ID:** 51d84a2f-68c1-4149-abb3-4d5be35fb0d9
 
 ## Customization
 
 To change the recipient email address:
 1. Set the `RECIPIENT_EMAIL` environment variable in Netlify
-2. Or edit the `recipientEmail` variable in functions/sendmail.js
-3. Update the success message in index.html and thank-you.html
+2. Update the success message in index.html and thank-you.html
 
 ## Credits
 
