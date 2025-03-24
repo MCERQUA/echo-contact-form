@@ -29,19 +29,35 @@ This contact form uses Netlify Functions (AWS Lambda) to handle form submissions
 
 Netlify will automatically detect the netlify.toml configuration and deploy the site with the serverless function.
 
-## Security Considerations
+## Environment Variables
 
-- The Mailgun SMTP credentials are currently embedded in the serverless function code
-- In a production environment, these should be moved to environment variables
-- To set environment variables in Netlify:
-  1. Go to Site settings > Build & deploy > Environment
-  2. Add variables like MAILGUN_USER and MAILGUN_PASSWORD
+The serverless function is configured to work without any setup, but it's recommended to set up environment variables for better security. To set up environment variables in Netlify:
+
+1. Deploy your site first
+2. Go to Site settings > Environment > Environment variables
+3. Add the following variables:
+   - `MAILGUN_SMTP_HOST`: smtp.mailgun.org
+   - `MAILGUN_SMTP_PORT`: 587
+   - `MAILGUN_SMTP_USER`: postmaster@sandbox206b88d8d50946179b90938caabb2124.mailgun.org
+   - `MAILGUN_SMTP_PASS`: cae3446a94fc51f8d106d5c1da0be463-3af52e3b-37d182ef
+   - `RECIPIENT_EMAIL`: mikecerqua@gmail.com
+4. Click "Save"
+5. Redeploy your site (Go to Deploys > Trigger deploy > Deploy site)
+
+If you don't set these variables, the function will fallback to the hardcoded values.
+
+## Site ID Information
+
+- **Site name:** echo-contact-form
+- **Owner:** MikeCerqua
+- **Site ID:** 51d84a2f-68c1-4149-abb3-4d5be35fb0d9
 
 ## Customization
 
 To change the recipient email address:
-1. Edit the `to` field in the functions/sendmail.js file
-2. Update the success message in index.html and thank-you.html
+1. Set the `RECIPIENT_EMAIL` environment variable in Netlify
+2. Or edit the `recipientEmail` variable in functions/sendmail.js
+3. Update the success message in index.html and thank-you.html
 
 ## Credits
 
